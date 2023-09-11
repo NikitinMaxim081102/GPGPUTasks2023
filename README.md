@@ -4,6 +4,8 @@
 ======
 
 - [Задание 0](https://github.com/GPGPUCourse/GPGPUTasks2023/tree/task00): Вводное. (5 баллов)
+- [Задание 1](https://github.com/GPGPUCourse/GPGPUTasks2023/tree/task01): A+B. (5 баллов)
+- [Задание 2](https://github.com/GPGPUCourse/GPGPUTasks2023/tree/task02): Теоретическое задание: параллелизуемость/code divergence/memory coalesced access. (5 баллов)
 
 Оценка
 ======
