@@ -128,7 +128,7 @@ int main() {
     OCL_SAFE_CALL(err);
 
     // unsigned int n = 1000 * 1000;
-    unsigned int n = 100 * 1000 * 1000;
+    const unsigned int n = 100 * 1000 * 1000;
     // Создаем два массива псевдослучайных данных для сложения и массив для будущего хранения результата
     std::vector<float> as(n, 0);
     std::vector<float> bs(n, 0);
@@ -269,7 +269,7 @@ int main() {
         for (unsigned int i = 0; i < 20; ++i) {
             cl_event read_buffer;
             // clEnqueueReadBuffer...
-            OCL_SAFE_CALL(clEnqueueReadBuffer(queue, buffC, CL_TRUE, 0, n, cs.data(), 0, nullptr, &read_buffer));
+            OCL_SAFE_CALL(clEnqueueReadBuffer(queue, buffC, CL_TRUE, 0, n * sizeof(float), cs.data(), 0, nullptr, &read_buffer));
             OCL_SAFE_CALL(clWaitForEvents(1, &read_buffer));
             clReleaseEvent(read_buffer);
             t.nextLap();
