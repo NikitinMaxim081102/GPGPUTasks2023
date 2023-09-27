@@ -75,6 +75,7 @@ int main(int argc, char **argv)
     uint gpu_answer;
 
     unsigned int workGroupSize = 64;
+    unsigned int VALUES_PER_WORKITEM = 32;
     unsigned int global_work_size = (n + workGroupSize - 1) / workGroupSize * workGroupSize;
 
     as_gpu.writeN(as.data(), n);
@@ -102,9 +103,14 @@ int main(int argc, char **argv)
         timer t;
         ocl::Kernel sum_2(sum_kernel, sum_kernel_length, "sum_2");
         sum_2.compile();
+
+        unsigned int local_global_work_size = global_work_size / VALUES_PER_WORKITEM;
+        if (global_work_size % VALUES_PER_WORKITEM != 0) {
+            local_global_work_size++;
+        }
         for (int iter = 0; iter < benchmarkingIters; ++iter) {
             sum_gpu.writeN(&zero_sum, 1);
-            sum_2.exec(gpu::WorkSize(workGroupSize, global_work_size),
+            sum_2.exec(gpu::WorkSize(workGroupSize, local_global_work_size),
                         as_gpu, sum_gpu, n);
 
             sum_gpu.readN(&gpu_answer, 1);
@@ -120,9 +126,13 @@ int main(int argc, char **argv)
         timer t;
         ocl::Kernel sum_1(sum_kernel, sum_kernel_length, "sum_3");
         sum_1.compile();
+        unsigned int local_global_work_size = global_work_size / VALUES_PER_WORKITEM;
+        if (global_work_size % VALUES_PER_WORKITEM != 0) {
+            local_global_work_size++;
+        }
         for (int iter = 0; iter < benchmarkingIters; ++iter) {
             sum_gpu.writeN(&zero_sum, 1);
-            sum_1.exec(gpu::WorkSize(workGroupSize, global_work_size),
+            sum_1.exec(gpu::WorkSize(workGroupSize, local_global_work_size),
                         as_gpu, sum_gpu, n);
 
             sum_gpu.readN(&gpu_answer, 1);
