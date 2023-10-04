@@ -175,8 +175,8 @@ int main(int argc, char **argv)
                     gpu::WorkSize(
                         work_group_size, 
                         work_group_size, 
-                        global_work_size_0,
-                        global_work_size_1
+                        global_work_size_1,
+                        global_work_size_0
                     ), 
                     as_gpu, 
                     bs_gpu, 
