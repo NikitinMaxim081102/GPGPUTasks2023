@@ -31,11 +31,16 @@ int main(int argc, char **argv) {
     context.activate();
 
     int benchmarkingIters = 10;
+    // int benchmarkingIters = 1;
     unsigned int n = 32 * 1024 * 1024;
+    // unsigned int n = 4;
     std::vector<float> as(n, 0);
     FastRandom r(n);
+    // FastRandom r(100);
     for (unsigned int i = 0; i < n; ++i) {
         as[i] = r.nextf();
+        // as[i] = 10 - i;
+        // std::cout << as[i] << std::endl;
     }
     std::cout << "Data generated for n=" << n << "!" << std::endl;
 
@@ -50,9 +55,10 @@ int main(int argc, char **argv) {
         std::cout << "CPU: " << t.lapAvg() << "+-" << t.lapStd() << " s" << std::endl;
         std::cout << "CPU: " << (n / 1000 / 1000) / t.lapAvg() << " millions/s" << std::endl;
     }
-    /*
     gpu::gpu_mem_32f as_gpu;
+    gpu::gpu_mem_32f bs_gpu;
     as_gpu.resizeN(n);
+    bs_gpu.resizeN(n);
     {
         ocl::Kernel merge(merge_kernel, merge_kernel_length, "merge");
         merge.compile();
@@ -62,7 +68,11 @@ int main(int argc, char **argv) {
             t.restart();// Запускаем секундомер после прогрузки данных, чтобы замерять время работы кернела, а не трансфера данных
             unsigned int workGroupSize = 128;
             unsigned int global_work_size = (n + workGroupSize - 1) / workGroupSize * workGroupSize;
-            merge.exec(gpu::WorkSize(workGroupSize, global_work_size), as_gpu, n);
+            for (uint blockSize = 1; blockSize <= (n + 1) / 2; blockSize *= 2) {
+                merge.exec(gpu::WorkSize(workGroupSize, global_work_size), as_gpu, bs_gpu, blockSize, n);
+                // std::cout << std::endl;
+                std::swap(as_gpu, bs_gpu);
+            }
             t.nextLap();
         }
         std::cout << "GPU: " << t.lapAvg() << "+-" << t.lapStd() << " s" << std::endl;
@@ -71,8 +81,8 @@ int main(int argc, char **argv) {
     }
     // Проверяем корректность результатов
     for (int i = 0; i < n; ++i) {
+        // std::cout << i << " " << as[i] << " " << cpu_sorted[i] << std::endl;
         EXPECT_THE_SAME(as[i], cpu_sorted[i], "GPU results should be equal to CPU results!");
     }
-*/
     return 0;
 }
