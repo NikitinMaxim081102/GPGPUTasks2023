@@ -64,25 +64,26 @@ __kernel void matrix_multiplication_3(
     int local_i = get_local_id(0);
     int local_j = get_local_id(1);
 
-    __local float tileA[TILE_SIZE * WORK_PER_THREAD][TILE_SIZE];
-    __local float tileB[TILE_SIZE][TILE_SIZE];
+    __local float tileA[TILE_SIZE][TILE_SIZE];
+    __local float tileB[TILE_SIZE][TILE_SIZE * WORK_PER_THREAD];
     float sum[WORK_PER_THREAD] = {0};
 
-    for (int tileK = 0; TILE_SIZE * tileK < K; tileK++) {
-        for (int work = 0; work < WORK_PER_THREAD; work++) {
-            tileA[local_j * WORK_PER_THREAD + work][local_i] = a[(j * WORK_PER_THREAD + work) * K + tileK * TILE_SIZE + local_i];
-        }
-        tileB[local_j][local_i] = b[(local_j + TILE_SIZE * tileK) * N + i];
 
+    for (uint t = 0; t < K / TILE_SIZE; t++) {
+        for (int  work = 0; work < WORK_PER_THREAD; work++) {
+            tileB[local_j][local_i * WORK_PER_THREAD + work] = b[(t * TILE_SIZE + local_j) * N + WORK_PER_THREAD * TILE_SIZE + i];
+        }
+        tileA[local_j][local_i] = a[t * TILE_SIZE + local_i + j * K];
         barrier(CLK_LOCAL_MEM_FENCE);
-        
+
         for (int k = 0; k < TILE_SIZE; k++) {
-            float tmp = tileB[k][local_i];
+            float tmp = tileA[local_j][k];
             for (int work = 0; work < WORK_PER_THREAD; work++) {
-                sum[work] += tileA[local_j * WORK_PER_THREAD + work][k] * tmp;
+                sum[work] += tmp * tileB[k][local_i * WORK_PER_THREAD + work];
             }
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
-    for (int work = 0; work < WORK_PER_THREAD; work++) c[(j * WORK_PER_THREAD + work) * N + i] = sum[work];
+
+    for (int work = 0; work < WORK_PER_THREAD; work++) c[j * N + WORK_PER_THREAD * TILE_SIZE + i] = sum[work];
 }

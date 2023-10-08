@@ -169,8 +169,8 @@ int main(int argc, char **argv)
                 // TODO
                 unsigned int work_group_size = 16;
                 uint z = WORK_PER_THREAD * work_group_size;
-                unsigned int global_work_size_0 = (M + z - 1) / z * z;
-                unsigned int global_work_size_1 = (N + work_group_size - 1) / work_group_size * work_group_size;
+                unsigned int global_work_size_0 = (M + work_group_size - 1) / work_group_size * work_group_size;
+                unsigned int global_work_size_1 = (N / WORK_PER_THREAD + work_group_size - 1) / work_group_size * work_group_size;
                 matrix_multiplication_kernel.exec(
                     gpu::WorkSize(
                         work_group_size, 
