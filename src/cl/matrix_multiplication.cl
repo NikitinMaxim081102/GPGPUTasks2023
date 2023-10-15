@@ -71,7 +71,7 @@ __kernel void matrix_multiplication_3(
 
     for (uint t = 0; t < K / TILE_SIZE; t++) {
         for (int  work = 0; work < WORK_PER_THREAD; work++) {
-            tileB[local_j][local_i * WORK_PER_THREAD + work] = b[(t * TILE_SIZE + local_j) * N + WORK_PER_THREAD * TILE_SIZE + i];
+            tileB[local_j][local_i * WORK_PER_THREAD + work] = b[(t * TILE_SIZE + local_j) * N + WORK_PER_THREAD * i + work];
         }
         tileA[local_j][local_i] = a[t * TILE_SIZE + local_i + j * K];
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -85,5 +85,5 @@ __kernel void matrix_multiplication_3(
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    for (int work = 0; work < WORK_PER_THREAD; work++) c[j * N + WORK_PER_THREAD * TILE_SIZE + i] = sum[work];
+    for (int work = 0; work < WORK_PER_THREAD; work++) c[j * N + WORK_PER_THREAD * i + work] = sum[work];
 }
