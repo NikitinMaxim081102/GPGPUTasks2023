@@ -107,11 +107,14 @@ int main(int argc, char **argv)
 				t.restart();
 
 				for (int i = 1; i < n; i *= 2) {
-					reduce.exec(gpu::WorkSize(workGroupSize, (n + i - 1) / i), as_gpu, i);
+					reduce.exec(gpu::WorkSize(workGroupSize, ((n + i - 1) / i) / 2), as_gpu, i);
 				}
 				as_gpu.readN(&res, 1, n - 1);
+				// for (int i = n / 2; i >= 1; i /= 2) {
+				// 	scan.exec(gpu::WorkSize(workGroupSize, (n + i - 1) / i), as_gpu, i, i == n / 2, n);
+				// }
 				for (int i = n / 2; i >= 1; i /= 2) {
-					scan.exec(gpu::WorkSize(workGroupSize, (n + i - 1) / i), as_gpu, i, i == n / 2, n);
+					scan.exec(gpu::WorkSize(workGroupSize, ((n + i - 1) / i) / 2), as_gpu, i, i == n / 2, n);
 				}
 
 				t.nextLap();
