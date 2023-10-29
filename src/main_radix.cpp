@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
                 // }
                 // std::cout << std::endl;
 
-                get_counts_table.exec(gpu::WorkSize(workGroupSize, n), as_gpu, counts_gpu, shift);
+                get_counts_table.exec(gpu::WorkSize(workGroupSize, n), as_gpu, counts_gpu, shift, n);
 
                 // std::cout << "counts_gpu shift = " << shift << std::endl;
                 // counts_gpu.readN(test.data(), groupsCount * 4);
@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
                 // std::cout << std::endl;
 
 
-                prefix_sum.exec(gpu::WorkSize(workGroupSize, groupsCount), counts_gpu, pref_gpu);
+                prefix_sum.exec(gpu::WorkSize(workGroupSize, groupsCount), counts_gpu, pref_gpu, groupsCount);
 
                 // std::cout << "prefSum shift = " << shift << std::endl;
                 // pref_gpu.readN(test.data(), groupsCount * 4);
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 					scan.exec(gpu::WorkSize(workGroupSize, ((size + i - 1) / i) / 2), counts_T_gpu, i, int(i == size / 2), size);
 				}
 
-                move.exec(gpu::WorkSize(workGroupSize, size), counts_T_gpu, counts_pref_sum_gpu, size, res);
+                move.exec(gpu::WorkSize(workGroupSize, size), counts_T_gpu, counts_pref_sum_gpu, size, res, size);
 
                 // std::cout << "countspPrefSum shift = " << shift << std::endl;
                 // counts_pref_sum_gpu.readN(test.data(), groupsCount * 4);
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
                 // std::cout << std::endl;
                 
                 // radix.exec(gpu::WorkSize(workGroupSize, n), as_gpu, counts_pref_sum_gpu, pref_gpu, tmp, shift);
-                radix.exec(gpu::WorkSize(workGroupSize, n), as_gpu, tmp, counts_pref_sum_gpu, pref_gpu, groupsCount, shift);
+                radix.exec(gpu::WorkSize(workGroupSize, n), as_gpu, tmp, counts_pref_sum_gpu, pref_gpu, groupsCount, shift, n);
 
                 std::swap(as_gpu, tmp);
 

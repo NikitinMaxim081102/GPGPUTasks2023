@@ -57,8 +57,10 @@ __kernel void matrix_transpose(
     __global const uint* a,
     __global       uint* at,
     const uint size
+    // const uint n
 ) {
     int gid = get_global_id(0);
+    if (gid >= size) return;
     for (int i = 0; i < COUNT; i++) {
         at[i * size + gid] = a[gid * COUNT + i];
     }
@@ -67,11 +69,13 @@ __kernel void matrix_transpose(
 __kernel void get_counts_table(
     __global const uint *as,
     __global       uint* cs,
-    uint shift
+    uint shift,
+    const uint n
 ) {
     uint gid = get_global_id(0);
     uint lid = get_local_id(0);
     uint wid = get_group_id(0);
+    if (gid >= n) return;
     __local uint local_count[COUNT];
     if (lid < COUNT) {
         local_count[lid] = 0;
@@ -88,9 +92,11 @@ __kernel void move(
     __global const uint *as,
     __global       uint* cs,
     uint size,
-    uint last
+    uint last,
+    const uint n
 ) {
     uint gid = get_global_id(0);
+    if (gid >= n) return;
     uint value = as[gid];
     barrier(CLK_LOCAL_MEM_FENCE);
     if (gid > 0)
@@ -105,9 +111,11 @@ __kernel void radix(
     __global const uint *prefSumT,
     __global const uint *prefSum,
     uint number_of_groups,
-    uint shift
+    uint shift,
+    const uint n
 ) {
     int gid = get_global_id(0);
+    if (gid >= n) return;
     int grid = get_group_id(0);
     unsigned int number = get_number(as[gid], shift);
     int realPosition = get_local_id(0) - prefSum[grid * COUNT + number];
@@ -119,9 +127,11 @@ __kernel void radix(
 
 __kernel void prefix_sum(
     __global const uint *as,
-    __global       uint *bs
+    __global       uint *bs,
+    const uint n
 ) {
     const uint gid = get_global_id(0);
+    if (gid >= n) return;
     uint sum = 0;
     bs[gid * COUNT] = 0;
     for(int i = 1; i < COUNT; i++) {
