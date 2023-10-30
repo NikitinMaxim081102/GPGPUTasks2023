@@ -59,7 +59,7 @@ __kernel void matrix_transpose(
     const uint size
     // const uint n
 ) {
-    int gid = get_global_id(0);
+    uint gid = get_global_id(0);
     if (gid >= size) return;
     for (int i = 0; i < COUNT; i++) {
         at[i * size + gid] = a[gid * COUNT + i];
@@ -114,11 +114,11 @@ __kernel void radix(
     uint shift,
     const uint n
 ) {
-    int gid = get_global_id(0);
+    uint gid = get_global_id(0);
     if (gid >= n) return;
-    int grid = get_group_id(0);
-    unsigned int number = get_number(as[gid], shift);
-    int realPosition = get_local_id(0) - prefSum[grid * COUNT + number];
+    uint grid = get_group_id(0);
+    uint number = get_number(as[gid], shift);
+    uint realPosition = get_local_id(0) - prefSum[grid * COUNT + number];
     if (grid || number) {
         realPosition += prefSumT[number * number_of_groups + grid - 1];
     }

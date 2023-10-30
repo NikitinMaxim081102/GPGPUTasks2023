@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
 
     int benchmarkingIters = 10;
     // int benchmarkingIters = 1;
-    // unsigned int n = 32 * 1024 * 1024;
-    unsigned int n = 1024 * 1024;
+    unsigned int n = 32 * 1024 * 1024;
+    // unsigned int n = 1024 * 1024;
     // unsigned int n = 64;
     std::unordered_map<int, int> counts;
     std::vector<unsigned int> as(n, 0);
@@ -77,10 +77,14 @@ int main(int argc, char **argv) {
     uint res;
     as_gpu.resizeN(n);
     tmp.resizeN(n);
-    counts_gpu.resizeN(n * 4);
-    counts_T_gpu.resizeN(n * 4);
-    pref_gpu.resizeN(n * 4);
-    counts_pref_sum_gpu.resizeN(n * 4);
+    // counts_gpu.resizeN(groupsCount * 4);
+    // counts_T_gpu.resizeN(groupsCount * 4);
+    // pref_gpu.resizeN(groupsCount * 4);
+    // counts_pref_sum_gpu.resizeN(groupsCount * 4);
+    counts_gpu.resizeN(groupsCount * 4);
+    counts_T_gpu.resizeN(groupsCount * 4);
+    pref_gpu.resizeN(groupsCount * 4);
+    counts_pref_sum_gpu.resizeN(groupsCount * 4);
 
 
     {
@@ -173,7 +177,7 @@ int main(int argc, char **argv) {
                 // }
                 // std::cout << std::endl;
 
-                uint size = n * 4;
+                uint size = groupsCount * 4;
                 for (uint i = 1; i < size; i *= 2) {
 					reduce.exec(gpu::WorkSize(workGroupSize, ((size + i - 1) / i) / 2), counts_T_gpu, i, size);
 				}
