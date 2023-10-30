@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
 
     int benchmarkingIters = 10;
     // int benchmarkingIters = 1;
-    unsigned int n = 32 * 1024 * 1024;
+    // unsigned int n = 32 * 1024 * 1024;
+    unsigned int n = 1024 * 1024;
     // unsigned int n = 64;
     std::unordered_map<int, int> counts;
     std::vector<unsigned int> as(n, 0);
