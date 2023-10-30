@@ -122,6 +122,7 @@ __kernel void radix(
     if (grid || number) {
         realPosition += prefSumT[number * number_of_groups + grid - 1];
     }
+    if (realPosition >= n) return;
     bs[realPosition] = as[gid];
 }
 
