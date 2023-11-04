@@ -42,8 +42,8 @@ int main(int argc, char **argv) {
 
     FastRandom r(n);
     for (unsigned int i = 0; i < n; ++i) {
-        // as[i] = (unsigned int) r.next(0, std::numeric_limits<int>::max());
-        as[i] = (unsigned int) r.next(0, 8);
+        as[i] = (unsigned int) r.next(0, std::numeric_limits<int>::max());
+        // as[i] = (unsigned int) r.next(0, 8);
         counts[as[i]]++;
         bs[i] = as[i];
     }
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
             // }
             // std::cout << std::endl;
             // for (uint shift = 0; shift < 32 / 2; shift++) {
-            for (uint shift = 0; shift < 4; shift++) {
+            for (uint shift = 0; shift < 32 / 2; shift++) {
                 // std::unordered_map<int, int> testCounts;
                 // if (shift > 0) return 0;
                 for (uint blockSize = 1; blockSize <= workGroupSize / 2; blockSize *= 2) {
