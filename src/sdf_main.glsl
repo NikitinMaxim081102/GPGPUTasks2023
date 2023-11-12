@@ -11,6 +11,80 @@ float sdPlane(vec3 p)
     return p.y;
 }
 
+float sdEllipsoid( vec3 p, vec3 r )
+{
+  float k0 = length(p/r);
+  float k1 = length(p/(r*r));
+  return k0*(k0-1.0)/k1;
+}
+
+mat3 rotateX(float theta) {
+    float c = cos(theta);
+    float s = sin(theta);
+    return mat3(
+        vec3(1, 0, 0),
+        vec3(0, c, -s),
+        vec3(0, s, c)
+    );
+}
+
+// Rotation matrix around the Y axis.
+mat3 rotateY(float theta) {
+    float c = cos(theta);
+    float s = sin(theta);
+    return mat3(
+        vec3(c, 0, s),
+        vec3(0, 1, 0),
+        vec3(-s, 0, c)
+    );
+}
+
+// Rotation matrix around the Z axis.
+mat3 rotateZ(float theta) {
+    float c = cos(theta);
+    float s = sin(theta);
+    return mat3(
+        vec3(c, -s, 0),
+        vec3(s, c, 0),
+        vec3(0, 0, 1)
+    );
+}
+
+float sdDeathStar( vec3 p2, float ra, float rb, float d )
+{
+  // sampling independent computations (only depend on shape)
+  float a = (ra*ra - rb*rb + d*d)/(2.0*d);
+  float b = sqrt(max(ra*ra-a*a,0.0));
+	
+  // sampling dependant computations
+  vec2 p = vec2( p2.x, length(p2.yz) );
+  if( p.x*b-p.y*a > d*max(b-p.y,0.0) )
+    return length(p-vec2(a,b));
+  else
+    return max( (length(p            )-ra),
+               -(length(p-vec2(d,0.0))-rb));
+}
+
+float sdRoundCone( vec3 p, float r1, float r2, float h )
+{
+  // sampling independent computations (only depend on shape)
+  float b = (r1-r2)/h;
+  float a = sqrt(1.0-b*b);
+
+  // sampling dependant computations
+  vec2 q = vec2( length(p.xz), p.y );
+  float k = dot(q,vec2(-b,a));
+  if( k<0.0 ) return length(q) - r1;
+  if( k>a*h ) return length(q-vec2(0.0,h)) - r2;
+  return dot(q, vec2(a,b) ) - r1;
+}
+
+float smin( float a, float b, float k )
+{
+    float res = exp2( -k*a ) + exp2( -k*b );
+    return -log2( res )/k;
+}
+
 // косинус который пропускает некоторые периоды, удобно чтобы махать ручкой не все время
 float lazycos(float angle)
 {
@@ -31,8 +105,25 @@ vec4 sdBody(vec3 p)
     float d = 1e10;
 
     // TODO
-    d = sdSphere((p - vec3(0.0, 0.35, -0.7)), 0.35);
+    float elD = 0.0;
+    d = sdSphere((p - vec3(0.0, 0.35, -0.7)), 0.3);
+    mat3 rotRight = rotateY((3.14159 + 3.14159 / 2.0));
+    elD = sdDeathStar(rotRight * (p - vec3(0.0, 0.65, -0.5)), 0.3, 0.25, 0.15 - min(0.0, lazycos(iTime * 7.0)));
     
+    float RH1 = sdEllipsoid(rotateZ(2.4) * (p - vec3(0.4, 0.5, -0.7)), vec3(0.1, 0.25, 0.1));
+    
+    
+    float LH1 = sdEllipsoid(rotateZ((2.4-lazycos(iTime * 5.0)) * 0.3) * (p - vec3(-0.44, 0.5, -0.7)), vec3(0.1, 0.25, 0.1));
+    
+    d = smin(elD, d, 16.0);
+    float NL = sdEllipsoid((p - vec3(-0.2, 0.05, -0.7)), vec3(0.1, 0.15, 0.1));
+    float NR = sdEllipsoid((p - vec3(0.2, 0.05, -0.7)), vec3(0.1, 0.15, 0.1));
+    
+    d = smin(NL, d, 70.0);
+    d = smin(NR, d, 70.0);
+    
+    d = smin(RH1, d, 23.0);
+    d = smin(LH1, d, 32.0);
     // return distance and color
     return vec4(d, vec3(0.0, 1.0, 0.0));
 }
@@ -40,7 +131,32 @@ vec4 sdBody(vec3 p)
 vec4 sdEye(vec3 p)
 {
 
+    float r[3];
+    r[0] = 0.25;
+    r[1] = 0.2;
+    r[2] = 0.1;
+
+    float c[3];
+    c[0] = -0.38;
+    c[1] = -0.37;
+    c[2] = -0.36;
+
+    vec3 col[3];
+    col[0] = vec3(1.0, 1.0, 1.0);
+    col[1] = vec3(1.0, 0.0, 0.0);
+    col[2] = vec3(0.0, 0.0, 0.0);
+
     vec4 res = vec4(1e10, 0.0, 0.0, 0.0);
+    for (int i = 0; i < 3; i++) {
+         float d = sdEllipsoid(p - vec3(0.0, 0.65, c[i]), vec3(r[i], r[i], 0.1));
+         if (d <= res.x) {
+             res.x = d;
+             res.y = col[i].x;
+             res.z = col[i].y;
+             res.w = col[i].z;
+         }
+    }
+
     
     return res;
 }
@@ -69,7 +185,7 @@ vec4 sdTotal(vec3 p)
     
     float dist = sdPlane(p);
     if (dist < res.x) {
-        res = vec4(dist, vec3(1.0, 0.0, 0.0));
+        res = vec4(dist, vec3(1.0, 1.0, 1.0));
     }
     
     return res;
